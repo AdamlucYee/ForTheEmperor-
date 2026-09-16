@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>assets\emperor.ico</ApplicationIcon>
+    <AssemblyName>ForTheEmperor</AssemblyName>
+    <RootNamespace>ForTheEmperor</RootNamespace>
+    <Version>0.2.0</Version>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\sprites\*.png" />
+  </ItemGroup>
+</Project>
