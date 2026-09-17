@@ -4,7 +4,7 @@
 
 **以帝皇之名，肃清你的桌面。**
 
-Windows 桌宠 v0.2 像素版。WPF 透明窗口、八套像素写实装甲精灵、独立战团动作与动态粒子，以及“先攻击动画，再将桌面文件移入回收站”的真实执行链路。
+Windows 桌宠 v0.2.1 像素版。WPF 透明窗口、八套像素写实装甲精灵、独立战团动作与动态粒子，以及“先攻击动画，再将桌面文件移入回收站”的真实执行链路。
 
 ## 项目演示
 
@@ -22,6 +22,11 @@ Windows 桌宠 v0.2 像素版。WPF 透明窗口、八套像素写实装甲精�
 
 <!-- 替换上方四处图片链接，并补齐下方“宣传图片来源”表。 -->
 
+## v0.2.1 发布修复
+
+- 改为自包含的 Windows x64 单文件 EXE，将 .NET 8 和 Windows 桌面运行时一起打包，无需接收者另行安装 .NET。
+- 构建后同步更新根目录与 `dist` 的 EXE，并生成 `dist/ForTheEmperor-win-x64-portable.zip`，方便直接分发。
+
 ## v0.2 更新
 
 - 修复文件已经回收、桌面却残留失效图标的问题：回收成功后发送 `SHCNE_DELETE` 和父目录 `SHCNE_UPDATEDIR`，使用 `SHCNF_PATHW | SHCNF_FLUSH` 确保 Explorer 收到通知；正常启动时也刷新桌面目录，清理先前残留的视图。
@@ -31,7 +36,9 @@ Windows 桌宠 v0.2 像素版。WPF 透明窗口、八套像素写实装甲精�
 
 ## 启动
 
-双击 `ForTheEmperor.exe`。已打包成单个 x64 EXE，需要 **64 位 Windows 10/11 + .NET 8 Windows Desktop Runtime**；本次构建所在电脑已经安装该运行时。无需管理员权限，不设开机自启，不联网。
+解压便携包 `ForTheEmperor-win-x64-portable.zip`，双击其中的 `ForTheEmperor.exe`；仓库根目录和 `dist` 中的同名 EXE 也可直接运行。v0.2.1 为自包含的单文件程序，需要 **64 位 Windows 10/11**，**无需另装 .NET 或 SDK**。角色素材和桌面运行时均包含在 EXE 内，无需复制 `bin`、`obj` 等构建目录。无需管理员权限，不设开机自启，程序运行不联网。
+
+首次启动会在当前用户的临时目录解压内置的本机运行库，可能比后续启动稍慢。旧版 v0.2 的约 14 MB EXE 仍需另装 .NET 8 Windows Desktop Runtime；若看到“必须安装或更新 .NET”，请换用 v0.2.1 的 EXE。
 
 启动后显示指挥面板，战士出现在鼠标所在显示器右下角。先点 **演练处决动画**，可观看完整流程，不操作真实文件。
 
@@ -141,7 +148,9 @@ AI 生成不代表素材自动获得无条件使用许可，也不保证不存�
 .\dist\ForTheEmperor.exe --render-animation artifacts
 ```
 
-构建使用 .NET SDK 8 或更新版本，无第三方 NuGet 包；仓库的 `NuGet.Config` 关闭远程包源。如果本机没有目标框架对应的 Windows Desktop targeting pack，需要先安装 .NET 8 SDK/targeting pack。
+构建使用 Windows 上的 .NET SDK 8 或更新版本，无第三方 NuGet 包。仓库的 `NuGet.Config` 启用官方 nuget.org 源，首次构建需要联网下载目标框架引用包和 Windows x64 运行时包；构建完成后，接收者运行 EXE 不需要联网或安装 .NET。
+
+`build.ps1` 默认使用自包含单文件发布，并嵌入本机运行库、压缩内置程序集，不进行 WPF 不支持的裁剪。`-Test` 对实际发布的 EXE 运行自检，通过后再复制到根目录和 `dist`。便携 ZIP 只包含 EXE 与 README，可作为 GitHub Release 附件发布。
 
 `--self-test artifacts` 验证状态顺序、各阶段取消、重复请求、目标变化、回收标志、真实回收、中文命名管道通信和全部战团绘制。真实回收测试仅处理它在 `artifacts\disposable-随机值\` 内创建的临时文件，并会在回收站留下带 `ForTheEmperor-recycle-test-` 前缀的测试文件。
 

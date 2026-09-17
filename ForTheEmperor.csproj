@@ -10,7 +10,7 @@
     <ApplicationIcon>assets\emperor.ico</ApplicationIcon>
     <AssemblyName>ForTheEmperor</AssemblyName>
     <RootNamespace>ForTheEmperor</RootNamespace>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
   </PropertyGroup>
