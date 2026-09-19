@@ -22,6 +22,53 @@ internal static class Checks
             catch (Exception ex) { results.Add("FAIL " + name + ": " + ex); }
         }
         void Assert(bool condition, string message = "Assertion failed") { if (!condition) throw new Exception(message); }
+        Test("Language preferences migrate old settings and roundtrip without losing pet options", () => {
+            var old = Preferences.Parse("{\"Chapter\":5,\"Scale\":1.3,\"Sound\":true,\"MenuEnabled\":false}");
+            Assert(old.Language == null && old.Chapter == 5 && old.Scale == 1.3 && old.Sound && !old.MenuEnabled);
+            old.Language = "en";
+            var saved = Preferences.Parse(System.Text.Json.JsonSerializer.Serialize(old));
+            Assert(saved.Language == "en" && saved.Chapter == 5 && saved.Scale == 1.3 && !saved.MenuEnabled);
+            Assert(Preferences.Parse("{\"Language\":\"unknown\"}").Language == null);
+        });
+        Test("English covers all chapters, combat details, errors and dynamic reports", () => {
+            string before = L.Language;
+            try {
+                L.SetLanguage("en");
+                bool HasChinese(string s) => s.Any(c => c >= '\u4e00' && c <= '\u9fff');
+                foreach (var entry in L.Entries) Assert(!string.IsNullOrWhiteSpace(entry.Value) && !HasChinese(L.T(entry.Key)), entry.Key);
+                foreach (var c in Chapter.All) Assert(!HasChinese(L.T(c.Name)) && !HasChinese(L.T(c.Weapon)));
+                foreach (var c in CombatStyle.All) Assert(!HasChinese(L.T(c.Detail)));
+                Assert(L.T("已移入回收站：中文文档.txt") == "Moved to Recycle Bin: 中文文档.txt");
+                Assert(L.T("处决未完成：无法验证文件身份。") == "Execution failed: Could not verify the file's identity.");
+                try { new FilePolicy(output).Capture("relative.txt"); throw new Exception("Expected rejection"); }
+                catch (IOException ex) { Assert(!HasChinese(ex.Message)); }
+                L.SetLanguage("zh-CN"); Assert(L.T("以帝皇之名处决") == "以帝皇之名处决");
+            } finally { L.SetLanguage(before); }
+        });
+        Test("Command panel switches languages live and renders both layouts", () => {
+            string before = L.Language;
+            var window = new CommandWindow(null) { WindowStartupLocation = WindowStartupLocation.Manual, Left = -2500, Top = -2500, ShowActivated = false };
+            try {
+                window.Show();
+                var combo = (System.Windows.Controls.ComboBox)window.FindName("LanguageCombo");
+                foreach (string language in new[] { "en", "zh-CN", "en" }) {
+                    combo.SelectedIndex = language == "en" ? 1 : 0;
+                    window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+                    window.UpdateLayout();
+                    Assert(L.Language == language);
+                    Assert(window.Title == L.T("FOR THE EMPEROR · 桌面战士"));
+                    Assert((string)((System.Windows.Controls.Button)window.FindName("DemoButton")).Content == L.T("▶   演练处决动画"));
+                    Assert(((System.Windows.Controls.TextBlock)window.FindName("ChapterName")).Text == L.T("极限战士"));
+                    var rootView = (FrameworkElement)window.Content;
+                    Save(rootView, (int)rootView.ActualWidth, (int)rootView.ActualHeight, Path.Combine(output, "panel-" + language + ".png"));
+                }
+                var picker = new LanguageWindow("en") { WindowStartupLocation = WindowStartupLocation.Manual, Left = -2500, Top = -2500, ShowActivated = false };
+                picker.Show(); picker.UpdateLayout();
+                var content = (FrameworkElement)picker.Content;
+                Save(content, (int)content.ActualWidth, (int)content.ActualHeight, Path.Combine(output, "language-picker.png"));
+                picker.Close();
+            } finally { window.Close(); L.SetLanguage(before); }
+        });
         Test("Full sequence commits once, after attack, returns to idle", () => {
             var mission = new Mission(); var phases = new List<Phase>(); int impacts = 0;
             mission.Changed += p => phases.Add(p);

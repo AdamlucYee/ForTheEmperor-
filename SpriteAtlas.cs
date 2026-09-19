@@ -17,7 +17,7 @@ internal static class SpriteAtlas
     {
         if (!Cache.TryGetValue(chapter, out var frames))
         {
-            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ForTheEmperor.assets.sprites." + Names[chapter] + ".png") ?? throw new InvalidOperationException("找不到战团精灵图：" + Names[chapter]);
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ForTheEmperor.assets.sprites." + Names[chapter] + ".png") ?? throw new InvalidOperationException(L.T("找不到战团精灵图：") + Names[chapter]);
             var decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
             var sheet = new FormatConvertedBitmap(decoder.Frames[0], PixelFormats.Bgra32, null, 0);
             int width = sheet.PixelWidth, height = sheet.PixelHeight;
@@ -51,7 +51,7 @@ internal static class SpriteAtlas
                 // Sample onto a deliberate logical pixel grid once, retaining source alpha.
                 int x0 = (int)Math.Round(f % 4 * width / 4.0), x1 = (int)Math.Round((f % 4 + 1) * width / 4.0);
                 int y0 = (int)Math.Round(f / 4 * height / 4.0), y1 = (int)Math.Round((f / 4 + 1) * height / 4.0);
-                if (areas[f] < 1000) throw new InvalidOperationException($"精灵图中的角色不完整：{Names[chapter]}/{f}");
+                if (areas[f] < 1000) throw new InvalidOperationException(L.T("精灵图中的角色不完整：") + Names[chapter] + "/" + f);
                 byte[] cell = new byte[CanvasWidth * CanvasHeight * 4];
                 for (int y = 0; y < CanvasHeight; y++) for (int x = 0; x < CanvasWidth; x++)
                 {

@@ -29,8 +29,10 @@ internal sealed class PetWindow : Window, IDisposable
     private HwndSource? source;
     private bool hotkey;
     internal event Action? StatusChanged;
-    internal string Status { get; private set; } = "等待命令";
-    internal string LastReport { get; private set; } = "战士已就位。为了帝皇。";
+    private string status = "等待命令";
+    internal string Status => L.T(status);
+    private string lastReport = "战士已就位。为了帝皇。";
+    internal string LastReport { get => L.T(lastReport); private set => lastReport = value; }
     internal bool Sound => app.Settings.Sound;
     public PetWindow(App app)
     {
@@ -40,10 +42,10 @@ internal sealed class PetWindow : Window, IDisposable
         WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
         AllowsTransparency = true; Background = Brushes.Transparent;
         Topmost = true; ShowInTaskbar = false; ShowActivated = false;
-        Title = "For the Emperor · 桌面战士";
+        Title = L.T("For the Emperor · 桌面战士");
         Content = marine; marine.ChapterIndex = app.Settings.Chapter;
         marine.Cursor = Cursors.Hand;
-        marine.ToolTip = "拖动移动 · 单击互动 · 双击指挥面板 · 右键切换战团";
+        marine.ToolTip = L.T("拖动移动 · 单击互动 · 双击指挥面板 · 右键切换战团");
         SourceInitialized += (_, _) => {
             Native.ToolWindow(this);
             source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
@@ -77,16 +79,26 @@ internal sealed class PetWindow : Window, IDisposable
     private ContextMenu BuildMenu()
     {
         var menu = new ContextMenu();
-        void Item(string title, Action action) { var item = new MenuItem { Header = title }; item.Click += (_, _) => action(); menu.Items.Add(item); }
+        void Item(string title, Action action) { var item = new MenuItem { Header = L.T(title) }; item.Click += (_, _) => action(); menu.Items.Add(item); }
         Item("打开指挥面板", app.ShowPanel);
-        var chapters = new MenuItem { Header = "更换战团" };
-        for (int i = 0; i < Chapter.All.Length; i++) { int index = i; var item = new MenuItem { Header = Chapter.All[i].Name }; item.Click += (_, _) => app.SelectChapter(index); chapters.Items.Add(item); }
+        var chapters = new MenuItem { Header = L.T("更换战团") };
+        for (int i = 0; i < Chapter.All.Length; i++) { int index = i; var item = new MenuItem { Header = L.T(Chapter.All[i].Name) }; item.Click += (_, _) => app.SelectChapter(index); chapters.Items.Add(item); }
         menu.Items.Add(chapters);
         Item("演练处决（不删除文件）", Demo);
         Item("取消任务  Ctrl+Alt+Esc", CancelMission);
         Item("召回右下角", Recall);
         menu.Items.Add(new Separator()); Item("退出并移除右键菜单", () => app.Shutdown());
         return menu;
+    }
+    internal void RefreshLanguage()
+    {
+        Title = L.T("For the Emperor · 桌面战士");
+        marine.ToolTip = L.T("拖动移动 · 单击互动 · 双击指挥面板 · 右键切换战团");
+        if (ContextMenu != null) ContextMenu.IsOpen = false;
+        ContextMenu = BuildMenu();
+        marine.InvalidateVisual();
+        effect?.View.InvalidateVisual();
+        StatusChanged?.Invoke();
     }
     private IntPtr Hook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
@@ -115,8 +127,8 @@ internal sealed class PetWindow : Window, IDisposable
     }
     internal string Execute(string path, Point target)
     {
-        if (app.Preview) return "预览模式不执行文件删除。";
-        if (Engine.Busy) return "战士正在执行任务，请等待其返回后再试。";
+        if (app.Preview) return L.T("预览模式不执行文件删除。");
+        if (Engine.Busy) return L.T("战士正在执行任务，请等待其返回后再试。");
         try { targetFile = policy.Capture(path); }
         catch (Exception ex) { return ex.Message; }
         Begin(target, false); return "OK";
@@ -152,7 +164,7 @@ internal sealed class PetWindow : Window, IDisposable
     }
     private void Changed(Phase phase)
     {
-        Status = phase switch { Phase.Idle => "等待命令", Phase.Alert => "发现目标", Phase.Turn => "转向目标", Phase.Run => "前往目标", Phase.Arrive => "抵达目标", Phase.Attack => "发动攻击", Phase.Execution => "执行处决", Phase.Recover => "整理装备", Phase.Return => "返回阵地", _ => "" };
+        status = phase switch { Phase.Idle => "等待命令", Phase.Alert => "发现目标", Phase.Turn => "转向目标", Phase.Run => "前往目标", Phase.Arrive => "抵达目标", Phase.Attack => "发动攻击", Phase.Execution => "执行处决", Phase.Recover => "整理装备", Phase.Return => "返回阵地", _ => "" };
         if (phase == Phase.Alert) Say(demo ? "训练任务。武器就绪。" : "Target acquired.");
         if (phase == Phase.Turn) marine.Facing = destination.X >= home.X ? 1 : -1;
         if (phase == Phase.Arrive) marine.Facing = targetPoint.X >= destination.X ? 1 : -1;

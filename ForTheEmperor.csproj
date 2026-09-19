@@ -10,11 +10,12 @@
     <ApplicationIcon>assets\emperor.ico</ApplicationIcon>
     <AssemblyName>ForTheEmperor</AssemblyName>
     <RootNamespace>ForTheEmperor</RootNamespace>
-    <Version>0.2.1</Version>
+    <Version>2.2.0</Version>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\sprites\*.png" />
+    <EmbeddedResource Include="assets\localization.json" />
   </ItemGroup>
 </Project>

@@ -25,7 +25,7 @@ public sealed class MarineView : FrameworkElement
     }
     internal static void Text(DrawingContext dc, string value, Point p, double size, string color, bool bold = false)
     {
-        var t = new FormattedText(value, CultureInfo.GetCultureInfo("zh-CN"), FlowDirection.LeftToRight, new Typeface(new FontFamily("Microsoft YaHei UI"), FontStyles.Normal, bold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal), size, B(color), 1.0);
+        var t = new FormattedText(L.T(value), L.Culture, FlowDirection.LeftToRight, new Typeface(new FontFamily("Segoe UI, Microsoft YaHei UI"), FontStyles.Normal, bold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal), size, B(color), 1.0);
         dc.DrawText(t, p);
     }
     internal int FrameIndex()
@@ -100,7 +100,8 @@ public sealed class MarineView : FrameworkElement
         if (!string.IsNullOrEmpty(Bubble))
         {
             dc.DrawRoundedRectangle(B("#F01B252D"), new Pen(B("#B09A70"), 1), new(4, 0, 232, 35), 3, 3);
-            var ft = new FormattedText(Bubble, CultureInfo.GetCultureInfo("zh-CN"), FlowDirection.LeftToRight, new Typeface("Microsoft YaHei UI"), Bubble.Length > 30 ? 9 : 11, MarineView.B("#F0E9D8"), 1) { MaxTextWidth = 218, MaxTextHeight = 29, TextAlignment = TextAlignment.Center, Trimming = TextTrimming.CharacterEllipsis };
+            string bubble = L.T(Bubble);
+            var ft = new FormattedText(bubble, L.Culture, FlowDirection.LeftToRight, new Typeface("Segoe UI, Microsoft YaHei UI"), bubble.Length > 30 ? 9 : 11, MarineView.B("#F0E9D8"), 1) { MaxTextWidth = 218, MaxTextHeight = 29, TextAlignment = TextAlignment.Center, Trimming = TextTrimming.CharacterEllipsis };
             dc.DrawText(ft, new(11, 5));
         }
         dc.Pop(); dc.Pop();

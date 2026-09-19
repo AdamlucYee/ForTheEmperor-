@@ -22,13 +22,19 @@ public sealed class App : Application
     private bool registered;
     private bool watching;
     private Mutex? mutex;
-    internal string MenuStatus = "尚未连接";
+    private string menuStatus = "尚未连接";
+    internal string MenuStatus => L.T(menuStatus);
 
     [STAThread]
     public static int Main(string[] args)
     {
         try
         {
+            var saved = Preferences.Load();
+            string? languageOverride = null;
+            for (int i = 0; i + 1 < args.Length; i++)
+                if (args[i] == "--language" && L.Supported(args[i + 1])) languageOverride = args[i + 1];
+            L.SetLanguage(languageOverride ?? saved.Language ?? (System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "zh-CN" : "en"));
             if (args.Length == 4 && args[0] == "--watch") { ShellMenu.Watch(int.Parse(args[1]), long.Parse(args[2]), args[3]); return 0; }
             if (args.Length > 0 && args[0] == "--unregister") { ShellMenu.Remove(); return 0; }
             if (args.Length > 0 && args[0] == "--self-test") return Checks.Run(args.Length > 1 ? args[1] : "artifacts");
@@ -42,8 +48,8 @@ public sealed class App : Application
                 var point = locate.Wait(900) ? locate.Result : cursor;
                 string result;
                 try { result = Bridge.Send(new("execute", args[1], point.X, point.Y)).GetAwaiter().GetResult(); }
-                catch { result = "请先启动桌面战士，再从文件右键菜单执行任务。"; }
-                if (result != "OK") MessageBox.Show(result, "以帝皇之名", MessageBoxButton.OK, MessageBoxImage.Information);
+                catch { result = L.T("请先启动桌面战士，再从文件右键菜单执行任务。"); }
+                if (result != "OK") MessageBox.Show(result, L.T("以帝皇之名"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return result == "OK" ? 0 : 1;
             }
             var app = new App { ShutdownMode = ShutdownMode.OnExplicitShutdown, Preview = Array.Exists(args, a => a is "--preview" or "--smoke-test") };
@@ -54,7 +60,8 @@ public sealed class App : Application
                 app.mutex.Dispose(); return 0;
             }
             app.Settings = app.Preview ? new() : Preferences.Load();
-            app.DispatcherUnhandledException += (_, e) => { Log(e.Exception.ToString()); MessageBox.Show(e.Exception.Message, "战士报告"); e.Handled = true; };
+            if (languageOverride != null) app.Settings.Language = languageOverride;
+            app.DispatcherUnhandledException += (_, e) => { Log(e.Exception.ToString()); MessageBox.Show(e.Exception.Message, L.T("战士报告")); e.Handled = true; };
             app.Startup += (_, _) => app.Start(args);
             app.Run();
             return 0;
@@ -63,20 +70,21 @@ public sealed class App : Application
     }
     private void Start(string[] args)
     {
+        if ((!Preview && !L.Supported(Settings.Language)) || Array.Exists(args, a => a == "--choose-language"))
+        {
+            var language = new LanguageWindow(L.Language);
+            if (language.ShowDialog() != true) { Shutdown(); return; }
+            Settings.Language = language.SelectedLanguage;
+            L.SetLanguage(language.SelectedLanguage);
+            if (!Preview) Settings.Save();
+        }
         Pet = new PetWindow(this); Pet.Show();
         if (!Preview)
         {
             _ = Task.Run(Native.RefreshDesktop);
             _ = Task.Run(() => Bridge.Listen(command => Dispatcher.InvokeAsync(() => Receive(command)).Task, stop.Token));
             if (Settings.MenuEnabled) SetMenu(true);
-            var menu = new Forms.ContextMenuStrip();
-            menu.Items.Add("打开指挥面板", null, (_, _) => ShowPanel());
-            menu.Items.Add("演练处决（不删除文件）", null, (_, _) => Pet.Demo());
-            menu.Items.Add("召回战士", null, (_, _) => Pet.Recall());
-            menu.Items.Add("取消当前任务", null, (_, _) => Pet.CancelMission());
-            menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add("退出并移除右键菜单", null, (_, _) => Shutdown());
-            tray = new Forms.NotifyIcon { Text = "For the Emperor · 桌面战士", Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!), ContextMenuStrip = menu, Visible = true };
+            tray = new Forms.NotifyIcon { Text = L.T("For the Emperor · 桌面战士"), Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!), ContextMenuStrip = BuildTrayMenu(), Visible = true };
             tray.DoubleClick += (_, _) => ShowPanel();
         }
         ShowPanel();
@@ -88,16 +96,44 @@ public sealed class App : Application
             t.Start();
         }
     }
+    private Forms.ContextMenuStrip BuildTrayMenu()
+    {
+        var menu = new Forms.ContextMenuStrip();
+        menu.Items.Add(L.T("打开指挥面板"), null, (_, _) => ShowPanel());
+        menu.Items.Add(L.T("演练处决（不删除文件）"), null, (_, _) => Pet.Demo());
+        menu.Items.Add(L.T("召回战士"), null, (_, _) => Pet.Recall());
+        menu.Items.Add(L.T("取消当前任务"), null, (_, _) => Pet.CancelMission());
+        menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add(L.T("退出并移除右键菜单"), null, (_, _) => Shutdown());
+        return menu;
+    }
+    internal void ChangeLanguage(string language)
+    {
+        if (!L.Supported(language)) return;
+        Settings.Language = language;
+        L.SetLanguage(language);
+        if (!Preview) Settings.Save();
+        Pet.RefreshLanguage();
+        if (tray != null)
+        {
+            var old = tray.ContextMenuStrip;
+            tray.ContextMenuStrip = BuildTrayMenu();
+            tray.Text = L.T("For the Emperor · 桌面战士");
+            old?.Dispose();
+        }
+        if (registered) SetMenu(true);
+        Panel?.Refresh();
+    }
     private string Receive(Command c)
     {
         if (c.Action == "show") { ShowPanel(); return "OK"; }
-        if (c.Action != "execute" || c.Path == null || !double.IsFinite(c.X) || !double.IsFinite(c.Y)) return "无效任务。";
-        if (!registered) return "文件右键处决尚未启用。";
+        if (c.Action != "execute" || c.Path == null || !double.IsFinite(c.X) || !double.IsFinite(c.Y)) return L.T("无效任务。");
+        if (!registered) return L.T("文件右键处决尚未启用。");
         return Pet.Execute(c.Path, new(c.X, c.Y));
     }
     internal void SetMenu(bool enabled)
     {
-        if (Preview) { MenuStatus = "预览模式 · 未注册系统菜单"; return; }
+        if (Preview) { menuStatus = "预览模式 · 未注册系统菜单"; return; }
         try
         {
             if (enabled)
@@ -109,18 +145,18 @@ public sealed class App : Application
                     var watch = Process.Start(new ProcessStartInfo(Environment.ProcessPath!) {
                         UseShellExecute = false, CreateNoWindow = true,
                         ArgumentList = { "--watch", p.Id.ToString(), p.StartTime.ToUniversalTime().Ticks.ToString(), owner }
-                    }) ?? throw new IOException("无法启动菜单看护进程。");
+                    }) ?? throw new IOException(L.T("无法启动菜单看护进程。"));
                     watch.Dispose(); watching = true;
                 }
-                MenuStatus = "已连接 · Windows 11 请点“显示更多选项”";
+                menuStatus = "已连接 · Windows 11 请点“显示更多选项”";
             }
-            else { ShellMenu.Remove(owner); registered = false; MenuStatus = "已关闭文件右键处决"; }
+            else { ShellMenu.Remove(owner); registered = false; menuStatus = "已关闭文件右键处决"; }
             Settings.MenuEnabled = enabled; Settings.Save();
         }
         catch (Exception ex)
         {
             try { ShellMenu.Remove(owner); } catch { }
-            registered = false; Settings.MenuEnabled = false; MenuStatus = "菜单连接失败：" + ex.Message; Log(MenuStatus);
+            registered = false; Settings.MenuEnabled = false; menuStatus = "菜单连接失败：" + ex.Message; Log(MenuStatus);
         }
         Panel?.Refresh();
     }

@@ -41,7 +41,7 @@ public sealed class Mission
     public event Action? Impact;
     public void Start()
     {
-        if (Busy) throw new InvalidOperationException("战士正在执行任务。");
+        if (Busy) throw new InvalidOperationException(L.T("战士正在执行任务。"));
         Committed = false; Cancelled = false; Set(Phase.Alert);
     }
     public bool Cancel()
@@ -70,6 +70,7 @@ public sealed class Mission
 
 public sealed class Preferences
 {
+    public string? Language { get; set; }
     public int Chapter { get; set; }
     public bool Sound { get; set; }
     public double Scale { get; set; } = 1;
@@ -77,13 +78,21 @@ public sealed class Preferences
     private static string FileName => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ForTheEmperor", "settings.json");
     public static Preferences Load()
     {
-        try { var p = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(FileName)) ?? new(); p.Chapter = Math.Clamp(p.Chapter, 0, 7); p.Scale = double.IsFinite(p.Scale) ? Math.Clamp(p.Scale, .7, 1.5) : 1; return p; }
+        try { return Parse(File.ReadAllText(FileName)); }
         catch { return new(); }
+    }
+    internal static Preferences Parse(string json)
+    {
+        var p = JsonSerializer.Deserialize<Preferences>(json) ?? new();
+        p.Chapter = Math.Clamp(p.Chapter, 0, 7);
+        p.Scale = double.IsFinite(p.Scale) ? Math.Clamp(p.Scale, .7, 1.5) : 1;
+        if (!L.Supported(p.Language)) p.Language = null;
+        return p;
     }
     public void Save()
     {
         try { Directory.CreateDirectory(Path.GetDirectoryName(FileName)!); File.WriteAllText(FileName + ".tmp", JsonSerializer.Serialize(this)); File.Move(FileName + ".tmp", FileName, true); }
-        catch (Exception ex) { App.Log("保存设置失败：" + ex.Message); }
+        catch (Exception ex) { App.Log(L.T("保存设置失败：") + ex.Message); }
     }
 }
 
@@ -96,17 +105,17 @@ public sealed class FilePolicy
     public static FilePolicy Desktop() => new(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory));
     public FileStamp Capture(string path)
     {
-        if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path) || path.StartsWith(@"\\") || path.StartsWith(@"\\?\") || path.IndexOf(':', 2) >= 0) throw new IOException("仅支持本机桌面上的普通文件。");
+        if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path) || path.StartsWith(@"\\") || path.StartsWith(@"\\?\") || path.IndexOf(':', 2) >= 0) throw new IOException(L.T("仅支持本机桌面上的普通文件。"));
         string full = Path.GetFullPath(path);
-        if (!roots.Any(root => string.Equals(Path.GetDirectoryName(full)?.TrimEnd('\\'), root.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))) throw new IOException("只能处决桌面上的文件，不包括子文件夹内的文件。");
+        if (!roots.Any(root => string.Equals(Path.GetDirectoryName(full)?.TrimEnd('\\'), root.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))) throw new IOException(L.T("只能处决桌面上的文件，不包括子文件夹内的文件。"));
         var info = new FileInfo(full);
-        if (!info.Exists || (info.Attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint | FileAttributes.System)) != 0) throw new IOException("文件不存在，或是系统文件、目录、重解析点；任务已取消。");
-        if (string.Equals(full, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)) throw new IOException("战士不能处决自己。");
+        if (!info.Exists || (info.Attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint | FileAttributes.System)) != 0) throw new IOException(L.T("文件不存在，或是系统文件、目录、重解析点；任务已取消。"));
+        if (string.Equals(full, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)) throw new IOException(L.T("战士不能处决自己。"));
         var id = Native.FileIdentity(full);
         return new(full, info.Length, info.LastWriteTimeUtc.Ticks, info.CreationTimeUtc.Ticks, id.Volume, id.Id);
     }
     public void Validate(FileStamp stamp)
     {
-        if (Capture(stamp.Path) != stamp) throw new IOException("动画期间文件发生变化；已取消删除。");
+        if (Capture(stamp.Path) != stamp) throw new IOException(L.T("动画期间文件发生变化；已取消删除。"));
     }
 }

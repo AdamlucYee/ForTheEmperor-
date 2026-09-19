@@ -2,8 +2,8 @@
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:local="clr-namespace:ForTheEmperor"
- Title="FOR THE EMPEROR · 桌面战士" Width="1060" Height="760" MinWidth="980" MinHeight="700"
- WindowStartupLocation="CenterScreen" Background="#11181C" Foreground="#E8E7DF" FontFamily="Microsoft YaHei UI" FontSize="12" UseLayoutRounding="True" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="Grayscale">
+ Title="{local:Tr Key='FOR THE EMPEROR · 桌面战士'}" Width="1120" Height="820" MinWidth="1060" MinHeight="780"
+ WindowStartupLocation="CenterScreen" Background="#11181C" Foreground="#E8E7DF" FontFamily="Segoe UI, Microsoft YaHei UI" FontSize="12" UseLayoutRounding="True" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="Grayscale">
  <Window.Resources>
   <SolidColorBrush x:Key="Gold" Color="#CEB17C"/>
   <Style TargetType="Button">
@@ -25,16 +25,17 @@
    <Grid>
     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
      <Border Width="34" Height="34" Background="#CEB17C" CornerRadius="3" Margin="0,0,14,0"><TextBlock Text="✠" Foreground="#172027" FontSize="27" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-     <StackPanel><TextBlock Text="FOR THE EMPEROR" FontFamily="Bahnschrift" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="桌 面 战 士  /  指 挥 终 端" FontSize="10" Foreground="#8F9A9D" Margin="0,3,0,0"/></StackPanel>
+     <StackPanel><TextBlock Text="FOR THE EMPEROR" FontFamily="Bahnschrift" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="{local:Tr Key='桌 面 战 士  /  指 挥 终 端'}" FontSize="10" Foreground="#8F9A9D" Margin="0,3,0,0"/></StackPanel>
     </StackPanel>
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-     <Ellipse Width="6" Height="6" Fill="#89B994" Margin="0,0,8,0"/><TextBlock Text="战士在线" Foreground="#AAB6B3" VerticalAlignment="Center"/>
-     <Border Background="#253034" CornerRadius="3" Padding="9,4" Margin="18,0,0,0"><TextBlock Text="v0.2.1 · 像素版" Foreground="#A7B1B0" FontSize="10"/></Border>
+     <Ellipse Width="6" Height="6" Fill="#89B994" Margin="0,0,8,0"/><TextBlock Text="{local:Tr Key='战士在线'}" Foreground="#AAB6B3" VerticalAlignment="Center"/>
+     <Border Background="#253034" CornerRadius="3" Padding="9,4" Margin="18,0,0,0"><TextBlock Text="{local:Tr Key='v2.2 · 像素版'}" Foreground="#A7B1B0" FontSize="10"/></Border>
     </StackPanel>
    </Grid>
   </Border>
-  <Grid Grid.Row="1" Margin="26,22,26,20">
-   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="302"/></Grid.ColumnDefinitions>
+  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+  <Grid Margin="26,22,26,20" MinHeight="620">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="332"/></Grid.ColumnDefinitions>
    <Grid Margin="0,0,22,0">
     <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="218"/></Grid.RowDefinitions>
     <Border Background="#192328" BorderBrush="#354044" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
@@ -47,23 +48,23 @@
       </Canvas>
       <StackPanel Margin="24,24,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
        <TextBlock Text="ADEPTUS ASTARTES" FontFamily="Bahnschrift" FontSize="11" Foreground="#BDA77D"/>
-       <TextBlock x:Name="ChapterName" Text="极限战士" FontSize="35" FontWeight="Bold" Margin="-2,14,0,0"/>
+       <TextBlock x:Name="ChapterName" MaxWidth="290" TextWrapping="Wrap" Text="{local:Tr Key='极限战士'}" FontSize="35" FontWeight="Bold" Margin="-2,14,0,0"/>
        <TextBlock x:Name="ChapterEnglish" Text="ULTRAMARINES" Foreground="#85979F" FontFamily="Bahnschrift" FontSize="12" Margin="0,6,0,0"/>
        <Border Width="28" Height="2" Background="#CEB17C" HorizontalAlignment="Left" Margin="0,19,0,16"/>
-       <TextBlock Text="你的桌面，由帝皇守护。" Foreground="#C1CAC8"/>
-       <TextBlock Text="像素装甲 · 独立动作 · 动态粒子" FontSize="11" Foreground="#89989D" Margin="0,8,0,0"/>
+       <TextBlock Text="{local:Tr Key='你的桌面，由帝皇守护。'}" MaxWidth="245" TextWrapping="Wrap" Foreground="#C1CAC8"/>
+       <TextBlock Text="{local:Tr Key='像素装甲 · 独立动作 · 动态粒子'}" MaxWidth="245" TextWrapping="Wrap" FontSize="11" Foreground="#89989D" Margin="0,8,0,0"/>
       </StackPanel>
       <local:MarineView x:Name="Hero" Width="282" Height="306" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,-5,0,0" IsHitTestVisible="False"/>
       <Grid VerticalAlignment="Bottom" Margin="24,0,24,22">
        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-       <StackPanel VerticalAlignment="Bottom"><TextBlock Text="处决方式" FontSize="10" Foreground="#7F9198"/><TextBlock x:Name="WeaponName" Text="爆弹枪精准射击" Foreground="#E0CC9F" Margin="0,5,0,0"/><TextBlock x:Name="CombatDetail" FontSize="10" Foreground="#91A2A7" Margin="0,7,0,0"/></StackPanel>
+       <StackPanel VerticalAlignment="Bottom"><TextBlock Text="{local:Tr Key='处决方式'}" FontSize="10" Foreground="#7F9198"/><TextBlock x:Name="WeaponName" Text="{local:Tr Key='爆弹枪精准射击'}" Foreground="#E0CC9F" Margin="0,5,0,0"/><TextBlock x:Name="CombatDetail" TextWrapping="Wrap" MaxWidth="300" FontSize="10" Foreground="#91A2A7" Margin="0,7,0,0"/></StackPanel>
        <Border Grid.Column="1" VerticalAlignment="Bottom" BorderBrush="#46504A" BorderThickness="1" CornerRadius="3" Padding="9,5"><TextBlock Text="●  BATTLE READY" FontSize="9" Foreground="#A8BB9D" FontFamily="Bahnschrift"/></Border>
       </Grid>
      </Grid>
     </Border>
     <Grid Grid.Row="1" Margin="0,19,0,0">
      <Grid.RowDefinitions><RowDefinition Height="28"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-     <TextBlock Text="选择你的战团" FontWeight="SemiBold"/>
+     <TextBlock Text="{local:Tr Key='选择你的战团'}" FontWeight="SemiBold"/>
      <TextBlock Text="CHAPTER SELECT / 08" HorizontalAlignment="Right" FontFamily="Bahnschrift" FontSize="10" Foreground="#77888F"/>
      <UniformGrid x:Name="ChapterGrid" Grid.Row="1" Rows="2" Columns="4" Margin="-4,0,-4,0"/>
     </Grid>
@@ -72,39 +73,46 @@
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <Border Background="#1C2529" BorderBrush="#354044" BorderThickness="1" CornerRadius="7" Padding="19">
      <StackPanel>
-      <TextBlock Text="行动控制" FontSize="15" FontWeight="SemiBold"/>
-      <TextBlock Text="先进行一次无文件演练。" Foreground="#8E9DA1" Margin="0,8,0,17"/>
-      <Button x:Name="DemoButton" Content="▶   演练处决动画" Background="#CEB17C" Foreground="#1B2429" FontWeight="Bold" BorderBrush="#CEB17C" Click="DemoClick"/>
+      <TextBlock Text="{local:Tr Key='行动控制'}" FontSize="15" FontWeight="SemiBold"/>
+      <TextBlock Text="{local:Tr Key='先进行一次无文件演练。'}" Foreground="#8E9DA1" Margin="0,8,0,17"/>
+      <Button x:Name="DemoButton" Content="{local:Tr Key='▶   演练处决动画'}" Background="#CEB17C" Foreground="#1B2429" FontWeight="Bold" BorderBrush="#CEB17C" Click="DemoClick"/>
       <Grid Margin="0,9,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-       <Button Content="召回战士" Margin="0,0,4,0" Click="RecallClick"/><Button x:Name="CancelButton" Grid.Column="1" Content="取消任务" Margin="4,0,0,0" Click="CancelClick"/>
+       <Button Content="{local:Tr Key='召回战士'}" Margin="0,0,4,0" Click="RecallClick"/><Button x:Name="CancelButton" Grid.Column="1" Content="{local:Tr Key='取消任务'}" Margin="4,0,0,0" Click="CancelClick"/>
       </Grid>
-      <TextBlock Text="Ctrl + Alt + Esc  可在命中前取消" FontSize="10" Foreground="#85959B" Margin="0,12,0,0" TextAlignment="Center"/>
+      <TextBlock Text="{local:Tr Key='Ctrl + Alt + Esc  可在命中前取消'}" FontSize="10" Foreground="#85959B" Margin="0,12,0,0" TextAlignment="Center"/>
      </StackPanel>
     </Border>
     <Border Grid.Row="1" Background="#1C2529" BorderBrush="#354044" BorderThickness="1" CornerRadius="7" Padding="19,16" Margin="0,12,0,0">
      <StackPanel>
-      <TextBlock Text="桌面协议" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,7"/>
-      <CheckBox x:Name="MenuCheck" Content="启用文件右键处决" Click="MenuClick"/>
-      <TextBlock x:Name="MenuNote" Text="Windows 11：右键 → 显示更多选项" Foreground="#85959B" FontSize="10" TextWrapping="Wrap" Margin="20,-2,0,6"/>
-      <CheckBox x:Name="SoundCheck" Content="互动音效（系统提示音）" Click="SoundClick"/>
+      <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="156"/></Grid.ColumnDefinitions>
+       <TextBlock Text="{local:Tr Key='语言'}" VerticalAlignment="Center"/>
+       <ComboBox x:Name="LanguageCombo" Grid.Column="1" SelectionChanged="LanguageChanged" Padding="6,4" AutomationProperties.AutomationId="LanguageCombo">
+        <ComboBoxItem Content="简体中文" Tag="zh-CN"/><ComboBoxItem Content="English" Tag="en"/>
+       </ComboBox>
+      </Grid>
+      <TextBlock Text="{local:Tr Key='桌面协议'}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,7"/>
+      <CheckBox x:Name="MenuCheck" Content="{local:Tr Key='启用文件右键处决'}" Checked="MenuClick" Unchecked="MenuClick"/>
+      <TextBlock x:Name="MenuNote" Text="{local:Tr Key='Windows 11：右键 → 显示更多选项'}" Foreground="#85959B" FontSize="10" TextWrapping="Wrap" Margin="20,-2,0,6"/>
+      <CheckBox x:Name="SoundCheck" Content="{local:Tr Key='互动音效（系统提示音）'}" Checked="SoundClick" Unchecked="SoundClick"/>
       <Grid Margin="0,10,0,2"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="148"/></Grid.ColumnDefinitions>
-       <TextBlock Text="战士尺寸" Foreground="#AAB8BA" VerticalAlignment="Center"/>
+       <TextBlock Text="{local:Tr Key='战士尺寸'}" Foreground="#AAB8BA" VerticalAlignment="Center"/>
        <Slider x:Name="SizeSlider" Grid.Column="1" Minimum="0.7" Maximum="1.5" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="PetSizeChanged"/>
       </Grid>
      </StackPanel>
     </Border>
     <Border Grid.Row="2" BorderBrush="#354044" BorderThickness="1" CornerRadius="7" Padding="19,15" Margin="0,12,0,0">
      <StackPanel>
-      <TextBlock Text="任务记录" Foreground="#B9A77F" FontSize="10"/>
-      <TextBlock x:Name="StatusText" Text="等待命令" FontSize="18" Margin="0,9,0,6"/>
-      <TextBlock x:Name="ReportText" Text="战士已就位。为了帝皇。" TextWrapping="Wrap" Foreground="#92A2A6" FontSize="11" MaxHeight="52" TextTrimming="CharacterEllipsis"/>
-      <TextBlock Text="文件进入回收站，可随时恢复。" Foreground="#9AA58C" FontSize="10" Margin="0,12,0,0"/>
+      <TextBlock Text="{local:Tr Key='任务记录'}" Foreground="#B9A77F" FontSize="10"/>
+      <TextBlock x:Name="StatusText" TextWrapping="Wrap" Text="{local:Tr Key='等待命令'}" FontSize="18" Margin="0,9,0,6"/>
+      <TextBlock x:Name="ReportText" Text="{local:Tr Key='战士已就位。为了帝皇。'}" TextWrapping="Wrap" Foreground="#92A2A6" FontSize="11" MaxHeight="52" TextTrimming="CharacterEllipsis"/>
+      <TextBlock Text="{local:Tr Key='文件进入回收站，可随时恢复。'}" Foreground="#9AA58C" FontSize="10" Margin="0,12,0,0"/>
      </StackPanel>
     </Border>
    </Grid>
   </Grid>
+  </ScrollViewer>
   <Border Grid.Row="2" Background="#151E22" BorderBrush="#303737" BorderThickness="0,1,0,0" Padding="26,0">
-   <Grid><TextBlock Text="FOR THE EMPEROR.   FOR YOUR DESKTOP." Foreground="#708189" FontFamily="Bahnschrift" FontSize="10" VerticalAlignment="Center"/><TextBlock Text="关闭此面板后，战士仍会驻守桌面。退出请用托盘菜单。" Foreground="#829097" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
+   <Grid><TextBlock Text="FOR THE EMPEROR.   FOR YOUR DESKTOP." Foreground="#708189" FontFamily="Bahnschrift" FontSize="10" VerticalAlignment="Center"/><TextBlock Text="{local:Tr Key='关闭此面板后，战士仍会驻守桌面。退出请用托盘菜单。'}" Foreground="#829097" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
   </Border>
  </Grid>
 </Window>

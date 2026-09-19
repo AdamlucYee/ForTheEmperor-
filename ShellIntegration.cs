@@ -18,7 +18,7 @@ internal static class ShellMenu
     public static void Register(string owner)
     {
         using var key = Registry.CurrentUser.CreateSubKey(KeyPath);
-        key.SetValue("", "以帝皇之名处决");
+        key.SetValue("", L.T("以帝皇之名处决"));
         key.SetValue("Icon", "\"" + Environment.ProcessPath + "\",0");
         key.SetValue("MultiSelectModel", "Single");
         key.SetValue("FTAOwner", owner);
@@ -68,7 +68,7 @@ internal static class Bridge
                 await pipe.WaitForConnectionAsync(stop);
                 using var deadline = CancellationTokenSource.CreateLinkedTokenSource(stop);
                 deadline.CancelAfter(3000);
-                var command = JsonSerializer.Deserialize<Command>(await Read(pipe, deadline.Token)) ?? throw new IOException("无效指令。");
+                var command = JsonSerializer.Deserialize<Command>(await Read(pipe, deadline.Token)) ?? throw new IOException(L.T("无效指令。"));
                 string reply = await receive(command);
                 await Write(pipe, reply, deadline.Token);
             }
@@ -79,7 +79,7 @@ internal static class Bridge
     private static async Task Write(Stream stream, string value, CancellationToken ct)
     {
         byte[] data = Encoding.UTF8.GetBytes(value);
-        if (data.Length > 32768) throw new IOException("指令过长。");
+        if (data.Length > 32768) throw new IOException(L.T("指令过长。"));
         await stream.WriteAsync(BitConverter.GetBytes(data.Length), ct);
         await stream.WriteAsync(data, ct);
         await stream.FlushAsync(ct);
@@ -88,7 +88,7 @@ internal static class Bridge
     {
         byte[] header = new byte[4]; await stream.ReadExactlyAsync(header, ct);
         int length = BitConverter.ToInt32(header);
-        if (length < 1 || length > 32768) throw new IOException("无效指令长度。");
+        if (length < 1 || length > 32768) throw new IOException(L.T("无效指令长度。"));
         byte[] data = new byte[length]; await stream.ReadExactlyAsync(data, ct);
         return Encoding.UTF8.GetString(data);
     }

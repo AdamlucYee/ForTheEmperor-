@@ -11,6 +11,8 @@ $results = [Collections.Generic.List[string]]::new()
 $petProcess = $null
 if (Get-Process ForTheEmperor -ErrorAction SilentlyContinue) { throw 'Close any running pet before this integration check.' }
 if (Test-Path -LiteralPath $menuKey) { throw 'Existing menu registration found; integration check will not overwrite it.' }
+$settingsPath = Join-Path $env:LOCALAPPDATA 'ForTheEmperor\settings.json'
+$originalSettings = if (Test-Path -LiteralPath $settingsPath) { [IO.File]::ReadAllBytes($settingsPath) } else { $null }
 function Test-DesktopIcon([string]$state) {
     $probeInfo = [Diagnostics.ProcessStartInfo]::new($exe)
     $probeInfo.UseShellExecute = $false
@@ -27,6 +29,9 @@ function Test-DesktopIcon([string]$state) {
 }
 try {
     [IO.File]::WriteAllText($fixture, 'Disposable integration fixture created by ForTheEmperor verification. Safe to remove from Recycle Bin.')
+    # Supply an explicit language for unattended verification; restore preferences below.
+    [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($settingsPath)) | Out-Null
+    [IO.File]::WriteAllText($settingsPath, '{"Language":"en","MenuEnabled":true}')
     $petProcess = Start-Process -FilePath $exe -WorkingDirectory $taskRoot -WindowStyle Hidden -PassThru
     $deadline = [DateTime]::UtcNow.AddSeconds(8)
     while (!(Test-Path -LiteralPath "$menuKey\command") -and [DateTime]::UtcNow -lt $deadline) { Start-Sleep -Milliseconds 200 }
@@ -67,6 +72,8 @@ try {
 } finally {
     if ($petProcess -and !$petProcess.HasExited) { $petProcess.Kill(); $petProcess.WaitForExit() }
     if ($petProcess) { $petProcess.Dispose() }
+    if ($null -ne $originalSettings) { [IO.File]::WriteAllBytes($settingsPath, $originalSettings) }
+    elseif (Test-Path -LiteralPath $settingsPath) { Remove-Item -LiteralPath $settingsPath }
     # Delete only the exact fixture created above; never recurse into the desktop.
     if (Test-Path -LiteralPath $fixture) { Remove-Item -LiteralPath $fixture }
     $output = Join-Path $taskRoot 'artifacts'

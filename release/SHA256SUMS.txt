@@ -1,0 +1,2 @@
+95de55f25919af29132b3225467a4baf36d17462367db5e90ba19d4e29bafc11  ForTheEmperor-v2.2-win-x64.zip
+ce6dc4d5a448c673cb78149213fbc35bb2ea8cc8082de99f339427fd80c8739d  ForTheEmperor-v2.2-win-x64/ForTheEmperor.exe

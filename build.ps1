@@ -1,4 +1,4 @@
-param([switch]$Test)
+param([switch]$Test, [switch]$Package)
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
@@ -18,8 +18,9 @@ try {
     Copy-Item -LiteralPath $publishedExe -Destination "$PSScriptRoot\dist\ForTheEmperor.exe"
     Copy-Item -LiteralPath $publishedExe -Destination "$PSScriptRoot\ForTheEmperor.exe"
     Copy-Item -LiteralPath "$PSScriptRoot\README.md" -Destination "$PSScriptRoot\dist\README.md"
-    $archive = Join-Path $PSScriptRoot 'dist\ForTheEmperor-win-x64-portable.zip'
-    Compress-Archive -LiteralPath "$PSScriptRoot\dist\ForTheEmperor.exe", "$PSScriptRoot\dist\README.md" -DestinationPath $archive -Force
+    Copy-Item -LiteralPath "$PSScriptRoot\README.en.md" -Destination "$PSScriptRoot\dist\README.en.md"
+    if ($Package) {
+        & "$PSScriptRoot\package.ps1"
+    }
     Write-Host "Ready: $PSScriptRoot\dist\ForTheEmperor.exe"
-    Write-Host "Portable package: $archive"
 } finally { Pop-Location }

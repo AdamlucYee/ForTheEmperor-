@@ -65,7 +65,7 @@ internal static class Native
             var condition = new OrCondition(new PropertyCondition(AutomationElement.NameProperty, Path.GetFileName(path)), new PropertyCondition(AutomationElement.NameProperty, Path.GetFileNameWithoutExtension(path)));
             return root.FindFirst(TreeScope.Children, condition) != null;
         }
-        catch (Exception ex) { App.Log("桌面视图检查：" + ex.Message); return null; }
+        catch (Exception ex) { App.Log(L.T("桌面视图检查：") + ex.Message); return null; }
     }
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] private static extern SafeFileHandle CreateFile(string name, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
     [DllImport("kernel32.dll", SetLastError = true)] private static extern bool GetFileInformationByHandle(SafeFileHandle handle, out BY_HANDLE_FILE_INFORMATION info);
@@ -94,7 +94,7 @@ internal static class Native
     public static (uint Volume, ulong Id) FileIdentity(string path)
     {
         using var handle = CreateFile(path, 0, 7, IntPtr.Zero, 3, 0x00200000, IntPtr.Zero);
-        if (handle.IsInvalid || !GetFileInformationByHandle(handle, out var info)) throw new IOException("无法验证文件身份。", Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()));
+        if (handle.IsInvalid || !GetFileInformationByHandle(handle, out var info)) throw new IOException(L.T("无法验证文件身份。"), Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()));
         return (info.Volume, ((ulong)info.IdHigh << 32) | info.IdLow);
     }
     public static void ToolWindow(Window w, bool clickThrough = false)
@@ -131,7 +131,7 @@ internal static class Native
             Rect r = matches[0].Current.BoundingRectangle;
             if (!r.IsEmpty && r.Width > 0 && r.Height > 0) return new(r.Left + r.Width / 2, r.Top + Math.Min(r.Height / 2, 32));
         }
-        catch (Exception ex) { App.Log("图标定位回退至菜单位置：" + ex.Message); }
+        catch (Exception ex) { App.Log(L.T("图标定位回退至菜单位置：") + ex.Message); }
         return fallback;
     }
 }
@@ -153,7 +153,7 @@ internal static class Recycle
             op.DeleteItem(item, guard);
             op.PerformOperations();
             op.GetAnyOperationsAborted(out bool aborted);
-            if (aborted || !guard.Success || System.IO.File.Exists(path)) throw new IOException("未移入回收站，处决已取消。" + (guard.Error < 0 ? " 错误：0x" + guard.Error.ToString("X8") : ""));
+            if (aborted || !guard.Success || System.IO.File.Exists(path)) throw new IOException(L.T("未移入回收站，处决已取消。") + (guard.Error < 0 ? L.T(" 错误：0x") + guard.Error.ToString("X8") : ""));
             Native.NotifyRecycled(path);
         }
         finally { if (item != null) Marshal.ReleaseComObject(item); Marshal.ReleaseComObject(op); }
